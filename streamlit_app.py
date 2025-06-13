@@ -1,65 +1,64 @@
 import streamlit as st
-import joblib
-import numpy as np
 import pandas as pd
+import numpy as np
+import joblib
 
-# Load model dan preprocessor
-model = joblib.load('obesity_model.pkl')
-preprocessor = joblib.load('preprocessor.pkl')
-le = joblib.load('label_encoder.pkl')
+# Load the pre-trained model and the preprocessor
+model = joblib.load('best_random_forest_model.pkl')  # Save your best model using joblib
+preprocessor = joblib.load('preprocessor.pkl')  # Save your preprocessor using joblib
 
-st.set_page_config(page_title="Prediksi Obesitas", layout="centered")
+# Function to make predictions
+def predict(input_data):
+    # Preprocess the input data
+    input_df = pd.DataFrame([input_data])
+    input_scaled = preprocessor.transform(input_df)
+    prediction = model.predict(input_scaled)
+    return prediction[0]
 
-st.title("🎯 Prediksi Tingkat Obesitas")
-st.markdown("Masukkan informasi berikut untuk memprediksi tingkat obesitas Anda.")
+# Streamlit app layout
+st.title("Obesity Level Prediction")
+st.write("Enter the following details:")
 
-# Input dari pengguna
-gender = st.selectbox("Gender", ['Male', 'Female'])
-age = st.slider("Age", 10, 100, 25)
-height = st.number_input("Height (meter)", min_value=1.0, max_value=2.5, value=1.7, step=0.01)
-weight = st.number_input("Weight (kg)", min_value=30.0, max_value=200.0, value=70.0, step=0.1)
-favc = st.selectbox("Apakah sering mengonsumsi makanan tinggi kalori?", ['yes', 'no'])
-fcvc = st.slider("Frekuensi konsumsi sayur (0-3)", 0.0, 3.0, 2.0, step=0.1)
-ncp = st.slider("Jumlah makan per hari", 1.0, 5.0, 3.0, step=0.1)
-ca = st.selectbox("Konsumsi alkohol", ['no', 'Sometimes', 'Frequently'])
-ch2o = st.slider("Jumlah konsumsi air (0-3 liter)", 0.0, 3.0, 2.0, step=0.1)
-faf = st.slider("Frekuensi aktivitas fisik (0-3 jam/minggu)", 0.0, 3.0, 1.0, step=0.1)
-tue = st.slider("Waktu depan komputer/gadget per hari (0-2 jam)", 0.0, 2.0, 1.0, step=0.1)
-scc = st.selectbox("Ada penyakit kronis?", ['yes', 'no'])
-mtrans = st.selectbox("Transportasi utama", ['Public_Transportation', 'Walking', 'Automobile', 'Motorbike', 'Bike'])
+# Input fields for the features
+age = st.number_input("Age", min_value=0, max_value=100, value=25)
+gender = st.selectbox("Gender", options=["Male", "Female"])
+height = st.number_input("Height (cm)", min_value=100, max_value=250, value=170)
+weight = st.number_input("Weight (kg)", min_value=30, max_value=200, value=70)
+fcvc = st.number_input("Frequency of Vegetables Consumption (0-7)", min_value=0, max_value=7, value=3)
+ncp = st.number_input("Number of meals consumed per day", min_value=1, max_value=10, value=3)
+ch2o = st.number_input("Water Consumption (liters)", min_value=0.5, max_value=10.0, value=2.0)
+faf = st.number_input("Physical Activity Frequency (0-7)", min_value=0, max_value=7, value=3)
+tue = st.number_input("Time spent on exercise (hours)", min_value=0, max_value=24, value=1)
+calc = st.selectbox("Caloric Intake", options=["Low", "Normal", "High"])
+favc = st.selectbox("Frequent Consumption of Fast Food", options=["Yes", "No"])
+scc = st.selectbox("Sleep Condition", options=["Good", "Average", "Poor"])
+mtrans = st.selectbox("Transportation Mode", options=["Walking", "Biking", "Car", "Public Transport"])
 
-# Prediksi
-if st.button("🔍 Prediksi Obesitas"):
-    # Data user dalam DataFrame
-    input_data = pd.DataFrame([{
-        'Gender': gender,
-        'Age': age,
-        'Height': height,
-        'Weight': weight,
-        'FAVC': favc,
-        'FCVC': fcvc,
-        'NCP': ncp,
-        'CAEC': 'no',  # bisa diubah jika tersedia
-        'SMOKE': 'no',  # default
-        'CH2O': ch2o,
-        'SCC': scc,
-        'FAF': faf,
-        'TUE': tue,
-        'CALC': ca,
-        'MTRANS': mtrans
-    }])
+# Button to make prediction
+if st.button("Predict"):
+    # Prepare input data
+    input_data = {
+        "Age": age,
+        "Gender": gender,
+        "Height": height,
+        "Weight": weight,
+        "FCVC": fcvc,
+        "NCP": ncp,
+        "CH2O": ch2o,
+        "FAF": faf,
+        "TUE": tue,
+        "CALC": calc,
+        "FAVC": favc,
+        "SCC": scc,
+        "MTRANS": mtrans
+    }
+    
+    # Make prediction
+    prediction = predict(input_data)
+    
+    # Display the result
+    st.write(f"The predicted obesity level is: {prediction}")
 
-    # Kolom yang dipakai oleh model
-    input_data = input_data[[
-        'Gender', 'Age', 'Height', 'Weight', 'FAVC', 'FCVC',
-        'NCP', 'CH2O', 'SCC', 'FAF', 'TUE', 'CALC', 'MTRANS'
-    ]]
-
-    # Preprocessing
-    input_scaled = preprocessor.transform(input_data)
-
-    # Prediksi
-    prediction = model.predict(input_scaled)[0]
-    prediction_label = le.inverse_transform([prediction])[0]
-
-    st.success(f"✅ Prediksi Tingkat Obesitas Anda: **{prediction_label}**")
+# Run the app
+if __name__ == "__main__":
+    st.run()
