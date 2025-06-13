@@ -72,11 +72,3 @@ if st.button("Predict"):
         st.success(f"Predicted Obesity Level: {prediction_label}")
     except Exception as e:
         st.error(f"Error during prediction: {e}")
-
-st.markdown("""
----
-#### Notes:
-- Ensure that the files `best_random_forest_model.pkl` and `preprocessor.pkl` are present in this directory.
-- You can save them after training your model by using `joblib.dump()`.
-- Install dependencies before running this app:
-
