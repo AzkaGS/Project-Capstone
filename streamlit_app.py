@@ -1,12 +1,21 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import pickle
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier
-from imblearn.over_sampling import SMOTE
+
+# Import dengan error handling
+try:
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
+    from sklearn.compose import ColumnTransformer
+    from sklearn.ensemble import RandomForestClassifier
+    from imblearn.over_sampling import SMOTE
+    sklearn_available = True
+except ImportError as e:
+    st.error(f"Error importing sklearn: {e}")
+    st.error("Pastikan scikit-learn dan imbalanced-learn terinstall dengan benar.")
+    st.stop()
+    sklearn_available = False
+
 import warnings
 warnings.filterwarnings('ignore')
 
